@@ -8,12 +8,18 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
     // 0 = yellow; 1 = red
     int activePlayer = 0;
+
+    boolean gameIsActive = true;
+
     //2 is 'unplayed'
     int[] gameState = {2,2,2,2,2,2,2,2,2};
 
@@ -27,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
             {2,5,8},
             {0,4,8},
             {2,4,6}
-};
+    };
 
     public  void dropin (View view) {
 
@@ -37,36 +43,101 @@ public class MainActivity extends AppCompatActivity {
 
         int tappedCounter = Integer.parseInt(counter.getTag().toString());
 
-        if (gameState[tappedCounter] == 2) {
+        if (gameState[tappedCounter] == 2 && gameIsActive) {
 
             gameState[tappedCounter] = activePlayer;
 
-        }
 
-        if (activePlayer == 0) {
+            if (activePlayer == 0) {
 
-            counter.setImageResource(R.drawable.yellow);
-            activePlayer = 1;
+                counter.setImageResource(R.drawable.yellow);
+                activePlayer = 1;
 
-        } else {
+            } else {
 
-            counter.setImageResource(R.drawable.red);
-            activePlayer = 0;
-        }
-
-        counter.animate().translationYBy(1000f).setDuration(300);
-
-        for (int[] winningPosition : winningPositions) {
-
-            if(gameState[winningPosition[0]] == gameState[winningPosition[1]] &&
-               gameState[winningPosition[1]] == gameState[winningPosition[2]] &&
-               gameState[winningPosition[0]] != 2) {
-
-                System.out.println(gameState[winningPosition[0]]);
-
+                counter.setImageResource(R.drawable.red);
+                activePlayer = 0;
             }
 
+            counter.animate().translationYBy(1000f).setDuration(300);
+
+            for (int[] winningPosition : winningPositions) {
+
+                if (gameState[winningPosition[0]] == gameState[winningPosition[1]] &&
+                        gameState[winningPosition[1]] == gameState[winningPosition[2]] &&
+                        gameState[winningPosition[0]] != 2) {
+                    //someone won
+
+                    gameIsActive = false;
+
+                    String winner = "Red";
+
+                    if (gameState[winningPosition[0]] == 0) {
+                        winner = "Yellow";
+                    }
+
+                    System.out.println(gameState[winningPosition[0]]);
+
+                    TextView winnerMessage = (TextView) findViewById(R.id.winnerMessage);
+                    winnerMessage.setText(winner + " has won!");
+
+                    // game won, display winner
+                    LinearLayout layout = (LinearLayout) findViewById(R.id.playAgainLayout);
+                    layout.setVisibility(View.VISIBLE);
+
+
+                } else {
+
+                    boolean gameIsOver = true;
+
+                    for (int counterState : gameState) {
+                        if (counterState == 2) gameIsOver = false;
+
+                    }
+                    if (gameIsOver) {
+
+                        TextView winnerMessage = (TextView) findViewById(R.id.winnerMessage);
+                        winnerMessage.setText("it's a draw");
+
+                        // game won, display winner
+                        LinearLayout layout = (LinearLayout) findViewById(R.id.playAgainLayout);
+                        layout.setVisibility(View.VISIBLE);
+
+                    }
+
+
+                }
+
+            }
         }
+    }
+
+    public void playAgain (View view) {
+
+        gameIsActive = true;
+
+        LinearLayout layout = (LinearLayout) findViewById(R.id.playAgainLayout);
+
+        layout.setVisibility(View.INVISIBLE);
+
+        activePlayer = 0;
+
+        //resetting the game
+        for (int i=0; i<gameState.length; i++) {
+            gameState[i] = 2;
+        }
+
+        GridLayout gridLayout = (GridLayout) findViewById(R.id.gridLayout);
+
+        for (int i=0; i < gridLayout.getChildCount(); i++) {
+
+           // ((ImageView) gridLayout.getChildAt(i)).setImageResource(0);
+            //imageView.setImageDrawable(null);
+            // above shit didn't work. find out why, delete comments
+            ((ImageView) gridLayout.getChildAt(i)).setImageDrawable(null);
+
+        }
+
     }
 
     @Override
